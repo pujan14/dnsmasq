@@ -14,5 +14,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name : Login to github container registry
+      run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u pujan14 --password-stdin
+
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ghcr.io/pujan14/dnsmasq:$(date +%s)
+      run: docker build . --file Dockerfile --tag ghcr.io/pujan14/dnsmasq:$GITHUB_SHA
+
+    - name: Push the Docker image
+      run: docker push ghcr.io/pujan14/dnsmasq:$GITHUB_SHA
