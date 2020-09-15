@@ -1,2 +1,2 @@
-# DNSMASQ in container
-This repo hosts Dockerfile for creating dnsmasq in container. latest tag is updated weekly automatically.
+# DNSMASQ in a container
+DNSMASQ in a container is a container image build using [distroless](https://github.com/GoogleContainerTools/distroless).
