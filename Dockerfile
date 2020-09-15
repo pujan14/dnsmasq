@@ -1,5 +1,5 @@
 FROM gcc:latest as build
-ARG VERSION="v2.82"
+ARG VERSION="v2.78"
 RUN gpg --keyserver keyring.debian.org --recv 15CDDA6AE19135A2
 RUN wget http://thekelleys.org.uk/dnsmasq/dnsmasq-$VERSION.tar.gz
 RUN wget http://thekelleys.org.uk/dnsmasq/dnsmasq-$VERSION.tar.gz.asc
