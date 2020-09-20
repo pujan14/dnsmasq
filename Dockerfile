@@ -1,5 +1,5 @@
 FROM gcc:latest as build
-ARG VERSION="v2.78"
+ARG VERSION="2.82"
 RUN gpg --keyserver keyring.debian.org --recv 15CDDA6AE19135A2
 RUN wget http://thekelleys.org.uk/dnsmasq/dnsmasq-$VERSION.tar.gz
 RUN wget http://thekelleys.org.uk/dnsmasq/dnsmasq-$VERSION.tar.gz.asc
@@ -13,6 +13,6 @@ VOLUME /etc/dnsmasq.d/
 
 EXPOSE 53 53/udp 67/udp
 
-ENTRYPOINT ["dnsmasq", "-k", "--log-facility=-"]
+ENTRYPOINT ["/dnsmasq", "-k", "--log-facility=-"]
 
 HEALTHCHECK --interval=10s CMD dnsmasq --test
