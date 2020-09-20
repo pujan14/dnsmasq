@@ -16,7 +16,7 @@ jobs:
       run: RELEASE_VERSION=$(curl -s http://thekelleys.org.uk/dnsmasq/ | grep -oP '(?<=LATEST_IS_)[0-9\.]*?(?=\")') && echo "::set-env name=RELEASE_VERSION::$RELEASE_VERSION"
 
     - name: Get latest version build with this repo
-      run: BUILD_VERSION=$(curl https://ghcr.io/v2/pujan14/dnsmasq/tags/list -s | jq .tags | ggrep -oP "[0-9\.]*" | sort -V | tail -n 1)  && echo "::set-env name=BUILD_VERSION::$BUILD_VERSION"
+      run: BUILD_VERSION=$(curl https://ghcr.io/v2/pujan14/dnsmasq/tags/list -s | jq .tags | grep -oP "[0-9\.]*" | sort -V | tail -n 1)  && echo "::set-env name=BUILD_VERSION::$BUILD_VERSION"
 
     - name: Login to github container registry
       run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u pujan14 --password-stdin
