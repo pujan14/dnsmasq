@@ -1,2 +1,2 @@
-# DNSMASQ in a container
-DNSMASQ in a container is a container image build using [distroless](https://github.com/GoogleContainerTools/distroless).
+# Distroless dnsmasq
+This repo creates [distroless](https://github.com/GoogleContainerTools/distroless) version of [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html).
