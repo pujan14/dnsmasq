@@ -1,4 +1,4 @@
-FROM gcc:latest as build
+FROM gcc:10 as build
 ARG VERSION="2.82"
 RUN gpg --keyserver keyring.debian.org --recv 15CDDA6AE19135A2
 RUN wget http://thekelleys.org.uk/dnsmasq/dnsmasq-$VERSION.tar.gz
@@ -6,7 +6,7 @@ RUN wget http://thekelleys.org.uk/dnsmasq/dnsmasq-$VERSION.tar.gz.asc
 RUN gpg --verify dnsmasq-$VERSION.tar.gz.asc dnsmasq-$VERSION.tar.gz && tar -xzf dnsmasq-$VERSION.tar.gz
 RUN cd dnsmasq-$VERSION && make install
 
-FROM gcr.io/distroless/base-debian10
+FROM gcr.io/distroless/base-debian10:nonroot
 COPY --from=build /usr/local/sbin/dnsmasq /
 
 VOLUME /etc/dnsmasq.d/
