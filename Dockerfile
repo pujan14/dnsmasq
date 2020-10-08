@@ -6,13 +6,9 @@ RUN wget http://thekelleys.org.uk/dnsmasq/dnsmasq-$VERSION.tar.gz.asc
 RUN gpg --verify dnsmasq-$VERSION.tar.gz.asc dnsmasq-$VERSION.tar.gz && tar -xzf dnsmasq-$VERSION.tar.gz
 RUN cd dnsmasq-$VERSION && make install
 
-FROM gcr.io/distroless/base-debian10:nonroot
+FROM gcr.io/distroless/base-debian10:latest
 COPY --from=build /usr/local/sbin/dnsmasq /
-
 VOLUME /etc/dnsmasq.d/
-
 EXPOSE 53 53/udp 67/udp
-
 ENTRYPOINT ["/dnsmasq", "-k", "--log-facility=-"]
-
-HEALTHCHECK --interval=10s CMD dnsmasq --test
+HEALTHCHECK --interval=10s CMD ["/dnsmasq", "--test"]
