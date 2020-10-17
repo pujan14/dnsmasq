@@ -35,11 +35,17 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: ghcr.io/pujan14/dnsmasq:${{ github.sha }}
+        image: "ghcr.io/pujan14/dnsmasq:${{ github.sha }}"
         args: --file=Dockerfile
 
-    - name: Move snyk scan report
-      run: mv snyk.sarif sarif/snyk-distroless.sarif
+    - name: Run the anchore scan action
+      uses: anchore/scan-action@v2
+      with:
+        image: "ghcr.io/pujan14/dnsmasq:${{ github.sha }}"
+        acs-report-enable: true
+
+    - name: Move sarif scan reports
+      run: mv snyk.sarif sarif/snyk-distroless.sarif && mv result.sarif sarif/anchore-distroless.sarif || true
 
     - name: Build the Docker alpine image
       run: docker build . --file alpine.Dockerfile
@@ -59,11 +65,17 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: ghcr.io/pujan14/dnsmasq:alpine-${{ github.sha }}
+        image: "ghcr.io/pujan14/dnsmasq:alpine-${{ github.sha }}"
         args: --file=alpine.Dockerfile
 
-    - name: Move snyk scan report
-      run: mv snyk.sarif sarif/snyk-alpine.sarif
+    - name: Run the anchore scan action
+      uses: anchore/scan-action@v2
+      with:
+        image: "ghcr.io/pujan14/dnsmasq:alpine-${{ github.sha }}"
+        acs-report-enable: true
+
+    - name: Move sarif scan reports
+      run: mv snyk.sarif sarif/snyk-alpine.sarif && mv result.sarif sarif/anchore-alpine.sarif || true
 
     - name: Upload sarif scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v1
