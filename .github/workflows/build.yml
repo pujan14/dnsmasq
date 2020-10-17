@@ -65,10 +65,15 @@ jobs:
     - name: Move snyk scan report
       run: mv snyk.sarif sarif/snyk-alpine.sarif
 
-    - name: Upload Trivy scan results to GitHub Security tab
+    - name: Upload sarif scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
         sarif_file: 'sarif'
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: sarif-reports
+        path: sarif/
 
     - name: Push the Docker image
       run: docker push ghcr.io/pujan14/dnsmasq
