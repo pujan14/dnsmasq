@@ -14,6 +14,9 @@ jobs:
     - name: Login to github container registry
       run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u pujan14 --password-stdin
 
+    - name: Create folder for sarif reports
+      run: mkdir sarif
+
     - name: Build the Docker distroless image
       run: docker build . --file Dockerfile --build-arg VERSION=$RELEASE_VERSION
           --tag ghcr.io/pujan14/dnsmasq:${{ github.sha }}
@@ -24,13 +27,19 @@ jobs:
         image-ref: 'ghcr.io/pujan14/dnsmasq:${{ github.sha }}'
         format: 'template'
         template: '@/contrib/sarif.tpl'
-        output: 'trivy-distroless.sarif'
+        output: 'sarif/trivy-distroless.sarif'
 
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v1
+    - name: Run Snyk to check Docker image for vulnerabilities
+      continue-on-error: true
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        sarif_file: 'trivy-distroless.sarif'
-        matrix: distroless
+        image: ghcr.io/pujan14/dnsmasq:${{ github.sha }}
+        args: --file=Dockerfile
+
+    - name: Move snyk scan report
+      run: mv snyk.sarif sarif/snyk-distroless.sarif
 
     - name: Build the Docker alpine image
       run: docker build . --file alpine.Dockerfile
@@ -42,13 +51,24 @@ jobs:
         image-ref: 'ghcr.io/pujan14/dnsmasq:alpine-${{ github.sha }}'
         format: 'template'
         template: '@/contrib/sarif.tpl'
-        output: 'trivy-alpine.sarif'
+        output: 'sarif/trivy-alpine.sarif'
+
+    - name: Run Snyk to check Docker image for vulnerabilities
+      continue-on-error: true
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ghcr.io/pujan14/dnsmasq:alpine-${{ github.sha }}
+        args: --file=alpine.Dockerfile
+
+    - name: Move snyk scan report
+      run: mv snyk.sarif sarif/snyk-alpine.sarif
 
     - name: Upload Trivy scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
-        sarif_file: 'trivy-alpine.sarif'
-        matrix: alpine
+        sarif_file: 'sarif'
 
     - name: Push the Docker image
       run: docker push ghcr.io/pujan14/dnsmasq
