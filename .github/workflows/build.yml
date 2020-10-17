@@ -1,7 +1,7 @@
 name: Docker Image CI
 on:
-  schedule:
-  - cron: "0 2 * * *"
+   push:
+     branches: [ master ]
 
 jobs:
   build:
@@ -19,14 +19,13 @@ jobs:
       if: env.BUILD_VERSION != env.RELEASE_VERSION
 
     - name: Build the Docker distroless image
-      run: docker build . --file Dockerfile --build-arg VERSION=$RELEASE_VERSION \\
-          --tag ghcr.io/pujan14/dnsmasq:$RELEASE_VERSION \\
+      run: docker build . --file Dockerfile --build-arg VERSION=$RELEASE_VERSION
+          --tag ghcr.io/pujan14/dnsmasq:$RELEASE_VERSION
           --tag ghcr.io/pujan14/dnsmasq:latest
       if: env.BUILD_VERSION != env.RELEASE_VERSION
 
     - name: Build the Docker alpine image
-      run: docker build . --file alpine.Dockerfile --build-arg VERSION=$RELEASE_VERSION \\
-          --tag ghcr.io/pujan14/dnsmasq:$RELEASE_VERSION-alpine \\
+      run: docker build . --file alpine.Dockerfile
           --tag ghcr.io/pujan14/dnsmasq:latest-alpine
       if: env.BUILD_VERSION != env.RELEASE_VERSION
 

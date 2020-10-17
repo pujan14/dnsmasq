@@ -1,0 +1,29 @@
+name: Docker Image CI
+on:
+  schedule:
+  - cron: "0 2 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Get latest release version of dnsmasq
+      run: RELEASE_VERSION=$(curl -s http://thekelleys.org.uk/dnsmasq/ | grep -oP '(?<=LATEST_IS_)[0-9\.]*?(?=\")') && echo "::set-env name=RELEASE_VERSION::$RELEASE_VERSION"
+
+    - name: Get latest version build with this repo
+      run: BUILD_VERSION=$(curl https://ghcr.io/v2/pujan14/dnsmasq/tags/list -s | jq .tags | grep -oP "[0-9\.]*" | sort -V | tail -n 1)  && echo "::set-env name=BUILD_VERSION::$BUILD_VERSION"
+
+    - name: Login to github container registry
+      run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u pujan14 --password-stdin
+      if: env.BUILD_VERSION != env.RELEASE_VERSION
+
+    - name: Build the Docker distroless image
+      run: docker build . --file Dockerfile --build-arg VERSION=$RELEASE_VERSION
+          --tag ghcr.io/pujan14/dnsmasq:$RELEASE_VERSION
+          --tag ghcr.io/pujan14/dnsmasq:latest
+      if: env.BUILD_VERSION != env.RELEASE_VERSION
+
+    - name: Push the Docker image
+      run: docker push ghcr.io/pujan14/dnsmasq
+      if: env.BUILD_VERSION != env.RELEASE_VERSION
