@@ -1,6 +1,10 @@
-FROM alpine:latest
-RUN apk --no-cache add dnsmasq
+FROM alpine:12
+LABEL maintainer="Pujan Shah"
+ARG VERSION="2.81-r0"
+RUN apk --no-cache add dnsmasq=$VERSION
+USER nonroot
 VOLUME /etc/dnsmasq.d/
-EXPOSE 53 53/udp 67/udp
-ENTRYPOINT ["dnsmasq", "-k", "--log-facility=-"]
-HEALTHCHECK --interval=10s CMD pgrep dnsmasq
+EXPOSE 8053 8053/udp
+ENTRYPOINT ["dnsmasq"]
+CMD ["-p8053", "-k", "--log-facility=-"]
+HEALTHCHECK --interval=10s CMD ["dnsmasq", "--test"]
