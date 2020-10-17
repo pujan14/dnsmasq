@@ -24,17 +24,31 @@ jobs:
         image-ref: 'ghcr.io/pujan14/dnsmasq:${{ github.sha }}'
         format: 'template'
         template: '@/contrib/sarif.tpl'
-        output: 'trivy-results.sarif'
-        severity: 'CRITICAL,HIGH'
+        output: 'trivy-distroless.sarif'
 
     - name: Upload Trivy scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
-        sarif_file: 'trivy-results.sarif'
+        sarif_file: 'trivy-distroless.sarif'
+        matrix: distroless
 
     - name: Build the Docker alpine image
       run: docker build . --file alpine.Dockerfile
-          --tag ghcr.io/pujan14/dnsmasq:latest-alpine
+          --tag ghcr.io/pujan14/dnsmasq:alpine-${{ github.sha }}
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'ghcr.io/pujan14/dnsmasq:alpine-${{ github.sha }}'
+        format: 'template'
+        template: '@/contrib/sarif.tpl'
+        output: 'trivy-alpine.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: 'trivy-alpine.sarif'
+        matrix: alpine
 
     - name: Push the Docker image
       run: docker push ghcr.io/pujan14/dnsmasq
