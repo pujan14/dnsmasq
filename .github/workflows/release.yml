@@ -16,13 +16,16 @@ jobs:
 
     - name: Login to github container registry
       run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u pujan14 --password-stdin
-      if: env.BUILD_VERSION != env.RELEASE_VERSION
 
     - name: Build the Docker distroless image
       run: docker build . --file Dockerfile --build-arg VERSION=$RELEASE_VERSION
           --tag ghcr.io/pujan14/dnsmasq:$RELEASE_VERSION
           --tag ghcr.io/pujan14/dnsmasq:latest
       if: env.BUILD_VERSION != env.RELEASE_VERSION
+
+    - name: Pull the Docker distroless image
+      run: docker pull ghcr.io/pujan14/dnsmasq:$RELEASE_VERSION
+      if: env.BUILD_VERSION = env.RELEASE_VERSION
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
