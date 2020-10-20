@@ -1,7 +1,7 @@
 name: Docker Image CI
 on:
   schedule:
-  - cron: "0 2 * * *"
+  - cron: "0 * * * *"
 
 jobs:
   build:
@@ -16,6 +16,9 @@ jobs:
 
     - name: Login to github container registry
       run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u pujan14 --password-stdin
+
+    - name: Create folder for sarif reports
+      run: mkdir sarif
 
     - name: Build the Docker distroless image
       run: docker build . --file Dockerfile --build-arg VERSION=$RELEASE_VERSION
@@ -37,10 +40,33 @@ jobs:
         exit-code: '1'
         severity: 'CRITICAL,HIGH'
 
-    - name: Upload Trivy scan results to GitHub Security tab
+    - name: Run Snyk to check Docker image for vulnerabilities
+      continue-on-error: true
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: "ghcr.io/pujan14/dnsmasq:$RELEASE_VERSION"
+        args: --file=Dockerfile
+
+    - name: Run the anchore scan action
+      uses: anchore/scan-action@v2
+      with:
+        image: "ghcr.io/pujan14/dnsmasq:$RELEASE_VERSION"
+        acs-report-enable: true
+
+    - name: Move sarif scan reports
+      run: mv snyk.sarif sarif/snyk-distroless.sarif && mv result.sarif sarif/anchore-distroless.sarif || true
+
+    - name: Upload sarif scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v1
       with:
-        sarif_file: 'trivy-results.sarif'
+        sarif_file: 'sarif'
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: sarif-reports
+        path: sarif/
 
     - name: Push the Docker image
       run: docker push ghcr.io/pujan14/dnsmasq
