@@ -25,7 +25,7 @@ jobs:
 
     - name: Pull the Docker distroless image
       run: docker pull ghcr.io/pujan14/dnsmasq:$RELEASE_VERSION
-      if: env.BUILD_VERSION = env.RELEASE_VERSION
+      if: env.BUILD_VERSION == env.RELEASE_VERSION
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
