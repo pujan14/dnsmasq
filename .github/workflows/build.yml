@@ -17,6 +17,9 @@ jobs:
     - name: Create folder for sarif reports
       run: mkdir sarif
 
+    - name: Check Dockerfile linting
+      run: docker run --rm -i hadolint/hadolint < Dockerfile
+
     - name: Build the Docker distroless image
       run: docker build . --file Dockerfile --build-arg VERSION=$RELEASE_VERSION
           --tag ghcr.io/pujan14/dnsmasq:${{ github.sha }}
@@ -47,6 +50,9 @@ jobs:
 
     - name: Move sarif scan reports
       run: mv snyk.sarif sarif/snyk-distroless.sarif && mv result.sarif sarif/anchore-distroless.sarif || true
+
+    - name: Check Dockerfile linting
+      run: docker run --rm -i hadolint/hadolint < alpine.Dockerfile
 
     - name: Build the Docker alpine image
       run: docker build . --file alpine.Dockerfile
